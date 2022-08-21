@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bytes"
 	"os"
 )
 
@@ -8,9 +9,15 @@ func main() {
 	var result []byte
 
 	data, _ := os.ReadFile("assets/courtyard.bmp")
-	BITMAP_FILE_HEADER := data[0:14]
-	BITMAP_INFO_HEADER := data[14:54]
-	BITMAP := data[54:len(data)]
+	dataReader := bytes.NewReader(data)
+
+	BITMAP_FILE_HEADER := make([]byte, 14)
+	BITMAP_INFO_HEADER := make([]byte, 40)
+	BITMAP := make([]byte, len(data))
+
+	dataReader.Read(BITMAP_FILE_HEADER)
+	dataReader.Read(BITMAP_INFO_HEADER)
+	dataReader.Read(BITMAP)
 
 	result = append(result, BITMAP_FILE_HEADER...)
 	result = append(result, BITMAP_INFO_HEADER...)

@@ -4,7 +4,8 @@
 *.dll
 *.so
 *.dylib
-
+*.hex
+*.hex.swp
 # Test binary, built with `go test -c`
 *.test
 
