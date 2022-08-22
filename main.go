@@ -8,8 +8,16 @@ import (
 	"os"
 )
 
+func check(e error) {
+	if e != nil {
+		panic(e)
+	}
+}
+
 func main() {
-	data, _ := os.ReadFile("assets/courtyard.bmp")
+	data, error := os.ReadFile("assets/courtyard.bmp")
+	check(error)
+
 	buffer := bytes.NewReader(data)
 
 	var bitmapFileHeader bmp.BITMAPFILEHEADER
