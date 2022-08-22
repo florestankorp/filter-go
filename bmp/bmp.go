@@ -1,5 +1,10 @@
 package bmp
 
+type BYTE uint8
+type DWORD uint32
+type LONG int32
+type WORD uint16
+
 /*
 RGBTRIPLE
 
