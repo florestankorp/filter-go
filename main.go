@@ -1,20 +1,23 @@
 package main
 
 import (
+	"bytes"
+	"encoding/binary"
+	"filter-go/bmp"
+	"fmt"
 	"os"
 )
 
 func main() {
-	var result []byte
-
 	data, _ := os.ReadFile("assets/courtyard.bmp")
-	bitmapFileHeader := data[:14]
-	bitmapInfoHeader := data[14:54]
-	bitmap := data[54:]
+	buffer := bytes.NewReader(data)
 
-	result = append(result, bitmapFileHeader...)
-	result = append(result, bitmapInfoHeader...)
-	result = append(result, bitmap...)
+	var bitmapFileHeader bmp.BITMAPFILEHEADER
+	binary.Read(buffer, binary.LittleEndian, &bitmapFileHeader)
 
-	os.WriteFile("out/result.bmp", result, 0644)
+	var bitmapInfoHeader bmp.BITMAPINFOHEADER
+	binary.Read(buffer, binary.LittleEndian, &bitmapInfoHeader)
+
+	fmt.Println(bitmapInfoHeader.BiWidth)  // should be 600, is 39321600
+	fmt.Println(bitmapInfoHeader.BiHeight) // should be -400, is -26214400
 }
