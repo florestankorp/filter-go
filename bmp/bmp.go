@@ -43,6 +43,7 @@ dimensions and color format of a DIB [device-independent bitmap].
 Adapted from http://msdn.microsoft.com/en-us/library/dd183376(VS.85).aspx.
 */
 type BITMAPINFOHEADER struct {
+	_               uint16
 	BiSize          uint32
 	BiWidth         int32
 	BiHeight        int32
