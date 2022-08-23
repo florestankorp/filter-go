@@ -21,24 +21,24 @@ func main() {
 
 	buffer := bytes.NewReader(data)
 
-	var bitmapFileHeader bmp.BITMAPFILEHEADER
+	var bitmapFileHeader bmp.BitmapFileHeader
 	binary.Read(buffer, binary.LittleEndian, &bitmapFileHeader)
 
-	var bitmapInfoHeader bmp.BITMAPINFOHEADER
+	var bitmapInfoHeader bmp.BitmapInfoHeader
 	binary.Read(buffer, binary.LittleEndian, &bitmapInfoHeader)
 
-	if bitmapFileHeader.BfType != 0x4d42 ||
-		bitmapFileHeader.BfOffBits != 54 ||
-		bitmapInfoHeader.BiSize != 40 ||
-		bitmapInfoHeader.BiBitCount != 24 ||
-		bitmapInfoHeader.BiCompression != 0 {
+	if bitmapFileHeader.Type != 0x4d42 ||
+		bitmapFileHeader.OffBits != 54 ||
+		bitmapInfoHeader.Size != 40 ||
+		bitmapInfoHeader.BitCount != 24 ||
+		bitmapInfoHeader.Compression != 0 {
 
 		panic("Unsupported file format.\n")
 
 	}
 
-	height := bitmapInfoHeader.BiHeight
-	width := bitmapInfoHeader.BiWidth
+	height := bitmapInfoHeader.Height
+	width := bitmapInfoHeader.Width
 
 	fmt.Println(width, height) // 600, -400
 

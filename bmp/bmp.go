@@ -1,52 +1,52 @@
 package bmp
 
 /*
-RGBTRIPLE
+RGBTriple
 
 This structure describes a color consisting of relative intensities of
 red, green, and blue.
 
 Adapted from http://msdn.microsoft.com/en-us/library/aa922590.aspx.
 */
-type RGBTRIPLE struct {
+type RGBTriple struct {
 	Blue  byte
 	Green byte
 	Red   byte
 }
 
 /*
-BITMAPFILEHEADER
+BitmapFileHeader
 
-The BITMAPFILEHEADER structure contains information about the type, size,
+The BitmapFileHeader structure contains information about the type, size,
 and layout of a file that contains a DIB [device-independent bitmap].
 Adapted from http://msdn.microsoft.com/en-us/library/dd183374(VS.85).aspx.
 */
-type BITMAPFILEHEADER struct {
-	BfType      uint16
-	BfSize      uint32
-	BfReserved1 uint16
-	BfReserved2 uint16
-	BfOffBits   uint32
+type BitmapFileHeader struct {
+	Type      uint16
+	Size      uint32
+	Reserved1 uint16
+	Reserved2 uint16
+	OffBits   uint32
 }
 
 /*
-BITMAPINFOHEADER
+BitmapInfoHeader
 
-The BITMAPINFOHEADER structure contains information about the
+The BitmapInfoHeader structure contains information about the
 dimensions and color format of a DIB [device-independent bitmap].
 
 Adapted from http://msdn.microsoft.com/en-us/library/dd183376(VS.85).aspx.
 */
-type BITMAPINFOHEADER struct {
-	BiSize          uint32
-	BiWidth         int32
-	BiHeight        int32
-	BiPlanes        uint16
-	BiBitCount      uint16
-	BiCompression   uint32
-	BiSizeImage     uint32
-	BiXPelsPerMeter int32
-	BiYPelsPerMeter int32
-	BiClrUsed       uint32
-	BiClrImportant  uint32
+type BitmapInfoHeader struct {
+	Size          uint32
+	Width         int32
+	Height        int32
+	Planes        uint16
+	BitCount      uint16
+	Compression   uint32
+	SizeImage     uint32
+	XPelsPerMeter int32
+	YPelsPerMeter int32
+	ClrUsed       uint32
+	ClrImportant  uint32
 }
