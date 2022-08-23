@@ -5,7 +5,6 @@ import (
 	"bytes"
 	"encoding/binary"
 	"filter-go/bmp"
-	"fmt"
 	"io"
 	"os"
 	"unsafe"
@@ -19,17 +18,15 @@ func check(e error) {
 
 func main() {
 
-	file, error := os.Open("assets/courtyard.bmp")
+	inFile, error := os.Open("assets/courtyard.bmp")
 	check(error)
-	defer file.Close()
-
-	reader := bufio.NewReader(file)
+	defer inFile.Close()
 
 	var bitmapFileHeader bmp.BitmapFileHeader
 	var bitmapInfoHeader bmp.BitmapInfoHeader
 
-	bmp.DecodeHeader(14, file, &bitmapFileHeader)
-	bmp.DecodeHeader(40, file, &bitmapInfoHeader)
+	bmp.DecodeHeader(14, inFile, &bitmapFileHeader)
+	bmp.DecodeHeader(40, inFile, &bitmapInfoHeader)
 
 	if bitmapFileHeader.Type != 0x4d42 ||
 		bitmapFileHeader.OffBits != 54 ||
@@ -43,20 +40,43 @@ func main() {
 	height := int(-bitmapInfoHeader.Height) // height is negative
 	width := int(bitmapInfoHeader.Width)
 
-	var padding int64 = int64((4 - ((width)*int(unsafe.Sizeof(bmp.RGBTriple{})))%4) % 4)
+	var padding int64 = int64((4 - ((width)*3)%4) % 4)
 
-	// allocate memory for pixels
-	pixels := make([]bmp.RGBTriple, width*height)
+	pixels := make([]bmp.RGBTriple, width*height) // allocate memory for pixels
 
+	// fill pixels with RGB values
 	for i := range pixels {
 		buffer := make([]byte, 3)
-		file.Read(buffer)
+		inFile.Read(buffer)
 		binary.Read(bytes.NewReader(buffer), binary.LittleEndian, &pixels[i])
-		file.Seek(padding, io.SeekCurrent)
+		inFile.Seek(padding, io.SeekCurrent)
 	}
 
-	fmt.Println(reader.Peek(2))
-	fmt.Println(pixels[len(pixels)-1])
-	fmt.Println(bitmapFileHeader.Size)
+	// STRUCTS TO BYTE CONVERSION
+	bytes := make([]byte, 0, width*height*3)
+	bitmapFileHeaderByteArray := *(*[14]byte)(unsafe.Pointer(&bitmapFileHeader))
+	bitmapInfoHeaderByteArray := *(*[40]byte)(unsafe.Pointer(&bitmapInfoHeader))
 
+	// parse out extra zeroes...
+	// why are there extra zeroes in the fileHeader!?
+	bytes = append(bytes, bitmapFileHeaderByteArray[:2]...)
+	bytes = append(bytes, bitmapFileHeaderByteArray[4:]...)
+	// need to add zeroes back to the end of the fileHeader :(
+	bytes = append(bytes, []byte{0, 0}[:]...)
+	bytes = append(bytes, bitmapInfoHeaderByteArray[:]...)
+
+	for i := range pixels {
+		byteArray := *(*[3]byte)(unsafe.Pointer(&pixels[i]))
+		bytes = append(bytes, byteArray[:]...)
+	}
+
+	outFile, err := os.Create("./out/result.bmp")
+	check(err)
+	defer outFile.Close()
+
+	writer := bufio.NewWriter(outFile)
+	_, err = writer.Write(bytes)
+	check(err)
+
+	writer.Flush()
 }

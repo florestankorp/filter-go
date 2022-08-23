@@ -16,9 +16,9 @@ red, green, and blue.
 Adapted from http://msdn.microsoft.com/en-us/library/aa922590.aspx.
 */
 type RGBTriple struct {
-	Blue  uint8
-	Green uint8
-	Red   uint8
+	Blue  byte
+	Green byte
+	Red   byte
 }
 
 /*
@@ -58,11 +58,11 @@ type BitmapInfoHeader struct {
 	ClrImportant  uint32
 }
 
-func DecodeHeader(bufferSize int, file *os.File, data interface{}) error {
+func DecodeHeader(bufferSize int, file *os.File, header interface{}) error {
 	buffer := make([]byte, bufferSize)
 	file.Read(buffer)
 
-	if error := binary.Read(bytes.NewReader(buffer), binary.LittleEndian, data); error != nil {
+	if error := binary.Read(bytes.NewReader(buffer), binary.LittleEndian, header); error != nil {
 		return fmt.Errorf("failed to parse DIB header: %w", error)
 	}
 
