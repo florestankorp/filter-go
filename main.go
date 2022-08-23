@@ -2,9 +2,13 @@ package main
 
 import (
 	"bufio"
+	"bytes"
+	"encoding/binary"
 	"filter-go/bmp"
 	"fmt"
+	"io"
 	"os"
+	"unsafe"
 )
 
 func check(e error) {
@@ -18,6 +22,8 @@ func main() {
 	file, error := os.Open("assets/courtyard.bmp")
 	check(error)
 	defer file.Close()
+
+	reader := bufio.NewReader(file)
 
 	var bitmapFileHeader bmp.BitmapFileHeader
 	var bitmapInfoHeader bmp.BitmapInfoHeader
@@ -34,34 +40,23 @@ func main() {
 		panic("Unsupported file format.\n")
 	}
 
-	// height := -bitmapInfoHeader.Height // height is negative
-	// width := bitmapInfoHeader.Width
+	height := int(-bitmapInfoHeader.Height) // height is negative
+	width := int(bitmapInfoHeader.Width)
 
-	// var rgbTriple bmp.RGBTriple
-	// var padding int64 = (4 - (int64(width)*int64(unsafe.Sizeof(rgbTriple)))%4) % 4
+	var padding int64 = int64((4 - ((width)*int(unsafe.Sizeof(bmp.RGBTriple{})))%4) % 4)
 
 	// allocate memory for pixels
-	// pixels := make([]bmp.RGBTriple, (int(height) * (int(width) * int(unsafe.Sizeof(rgbTriple)))))
-	r4 := bufio.NewReader(file)
-	b4, err := r4.Peek(5)
-	check(err)
-	fmt.Println(b4)
-	// for i, _ := range pixels {
-	// 	buffer := make([]byte, int(unsafe.Sizeof(rgbTriple)))
-	// 	file.Read(buffer)
-	// 	binary.Read(bytes.NewReader(buffer), binary.LittleEndian, &pixels[i])
+	pixels := make([]bmp.RGBTriple, width*height)
 
-	// }
+	for i := range pixels {
+		buffer := make([]byte, 3)
+		file.Read(buffer)
+		binary.Read(bytes.NewReader(buffer), binary.LittleEndian, &pixels[i])
+		file.Seek(padding, io.SeekCurrent)
+	}
 
-	// iterate over scanlines
-	// for i := 0; i < int(height); i++ {
-	// 	buffer := make([]byte, int(width)*int(unsafe.Sizeof(rgbTriple)))
-	// 	file.Read(buffer)
-	// 	binary.Read(bytes.NewReader(buffer), binary.LittleEndian, &pixels[i])
-
-	// 	file.Seek(padding, 0)
-	// }
-
-	// fmt.Println(pixels[0])
+	fmt.Println(reader.Peek(2))
+	fmt.Println(pixels[len(pixels)-1])
+	fmt.Println(bitmapFileHeader.Size)
 
 }
