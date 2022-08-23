@@ -4,8 +4,8 @@ import (
 	"bytes"
 	"encoding/binary"
 	"filter-go/bmp"
+	"fmt"
 	"os"
-	"unsafe"
 )
 
 func check(e error) {
@@ -16,32 +16,21 @@ func check(e error) {
 
 func main() {
 
-	data, error := os.ReadFile("assets/courtyard.bmp")
+	file, error := os.Open("assets/courtyard.bmp")
 	check(error)
-
-	buffer := bytes.NewReader(data)
+	defer file.Close()
 
 	var bitmapFileHeader bmp.BitmapFileHeader
-	binary.Read(buffer, binary.LittleEndian, &bitmapFileHeader)
+	buffer := make([]byte, 14)
+	file.Read(buffer)
+	binary.Read(bytes.NewReader(buffer), binary.LittleEndian, &bitmapFileHeader)
 
 	var bitmapInfoHeader bmp.BitmapInfoHeader
-	binary.Read(buffer, binary.LittleEndian, &bitmapInfoHeader)
+	buffer1 := make([]byte, 40)
+	file.Read(buffer1)
+	binary.Read(bytes.NewReader(buffer1), binary.LittleEndian, &bitmapInfoHeader)
 
-	if bitmapFileHeader.Type != 0x4d42 ||
-		bitmapFileHeader.OffBits != 54 ||
-		bitmapInfoHeader.Size != 40 ||
-		bitmapInfoHeader.BitCount != 24 ||
-		bitmapInfoHeader.Compression != 0 {
-
-		panic("Unsupported file format.\n")
-
-	}
-
-	// height is a negative number
-	height := -bitmapInfoHeader.Height
-	width := bitmapInfoHeader.Width
-
-	var rgbTriple bmp.RGBTriple
-	padding := (4 - (int(width)*int(unsafe.Sizeof(rgbTriple)))%4) % 4
+	fmt.Println(bitmapFileHeader)
+	fmt.Println(bitmapInfoHeader)
 
 }
