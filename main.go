@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/binary"
 	"filter-go/bmp"
+	"fmt"
 	"os"
 )
 
@@ -35,5 +36,10 @@ func main() {
 		panic("Unsupported file format.\n")
 
 	}
+
+	height := bitmapInfoHeader.BiHeight
+	width := bitmapInfoHeader.BiWidth
+
+	fmt.Println(width, height) // 600, -400
 
 }
