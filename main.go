@@ -4,8 +4,8 @@ import (
 	"bytes"
 	"encoding/binary"
 	"filter-go/bmp"
-	"fmt"
 	"os"
+	"unsafe"
 )
 
 func check(e error) {
@@ -37,9 +37,11 @@ func main() {
 
 	}
 
-	height := bitmapInfoHeader.Height
+	// height is a negative number
+	height := -bitmapInfoHeader.Height
 	width := bitmapInfoHeader.Width
 
-	fmt.Println(width, height) // 600, -400
+	var rgbTriple bmp.RGBTriple
+	padding := (4 - (int(width)*int(unsafe.Sizeof(rgbTriple)))%4) % 4
 
 }
