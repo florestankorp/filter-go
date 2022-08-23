@@ -9,9 +9,9 @@ red, green, and blue.
 Adapted from http://msdn.microsoft.com/en-us/library/aa922590.aspx.
 */
 type RGBTriple struct {
-	Blue  byte
-	Green byte
-	Red   byte
+	Blue  uint8
+	Green uint8
+	Red   uint8
 }
 
 /*
