@@ -1,5 +1,12 @@
 package bmp
 
+import (
+	"bytes"
+	"encoding/binary"
+	"fmt"
+	"os"
+)
+
 /*
 RGBTriple
 
@@ -49,4 +56,15 @@ type BitmapInfoHeader struct {
 	YPelsPerMeter int32
 	ClrUsed       uint32
 	ClrImportant  uint32
+}
+
+func DecodeHeader(bufferSize int, file *os.File, data interface{}) error {
+	buffer := make([]byte, bufferSize)
+	file.Read(buffer)
+
+	if error := binary.Read(bytes.NewReader(buffer), binary.LittleEndian, data); error != nil {
+		return fmt.Errorf("failed to parse DIB header: %w", error)
+	}
+
+	return nil
 }

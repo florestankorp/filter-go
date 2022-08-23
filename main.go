@@ -1,11 +1,10 @@
 package main
 
 import (
-	"bytes"
-	"encoding/binary"
 	"filter-go/bmp"
 	"fmt"
 	"os"
+	"unsafe"
 )
 
 func check(e error) {
@@ -21,16 +20,27 @@ func main() {
 	defer file.Close()
 
 	var bitmapFileHeader bmp.BitmapFileHeader
-	buffer := make([]byte, 14)
-	file.Read(buffer)
-	binary.Read(bytes.NewReader(buffer), binary.LittleEndian, &bitmapFileHeader)
-
 	var bitmapInfoHeader bmp.BitmapInfoHeader
-	buffer1 := make([]byte, 40)
-	file.Read(buffer1)
-	binary.Read(bytes.NewReader(buffer1), binary.LittleEndian, &bitmapInfoHeader)
 
-	fmt.Println(bitmapFileHeader)
-	fmt.Println(bitmapInfoHeader)
+	bmp.DecodeHeader(14, file, &bitmapFileHeader)
+	bmp.DecodeHeader(40, file, &bitmapInfoHeader)
+
+	if bitmapFileHeader.Type != 0x4d42 ||
+		bitmapFileHeader.OffBits != 54 ||
+		bitmapInfoHeader.Size != 40 ||
+		bitmapInfoHeader.BitCount != 24 ||
+		bitmapInfoHeader.Compression != 0 {
+
+		panic("Unsupported file format.\n")
+	}
+
+	height := -bitmapInfoHeader.Height // height is negative
+	width := bitmapInfoHeader.Width
+
+	var rgbTriple bmp.RGBTriple
+	padding := (4 - (int(width)*int(unsafe.Sizeof(rgbTriple)))%4) % 4
+
+	fmt.Println(height)
+	fmt.Println(padding)
 
 }
