@@ -8,14 +8,14 @@ import (
 )
 
 /*
-RGBTriple
+Pixel
 
 This structure describes a color consisting of relative intensities of
 red, green, and blue.
 
 Adapted from http://msdn.microsoft.com/en-us/library/aa922590.aspx.
 */
-type RGBTriple struct {
+type Pixel struct {
 	Blue  byte
 	Green byte
 	Red   byte
@@ -33,7 +33,7 @@ type BitmapFileHeader struct {
 	Size      uint32
 	Reserved1 uint16
 	Reserved2 uint16
-	OffBits   uint32
+	OffBits   uint16
 }
 
 /*
@@ -58,7 +58,7 @@ type BitmapInfoHeader struct {
 	ClrImportant  uint32
 }
 
-func DecodeHeader(bufferSize int, file *os.File, header interface{}) error {
+func EncodeHeader(bufferSize int, file *os.File, header interface{}) error {
 	buffer := make([]byte, bufferSize)
 	file.Read(buffer)
 
