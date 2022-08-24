@@ -4,7 +4,8 @@ import (
 	"bufio"
 	"bytes"
 	"encoding/binary"
-	"filter-go/bmp"
+	"filter-go/pkg/bmp"
+	"filter-go/pkg/utils"
 	"io"
 	"os"
 	"unsafe"
@@ -16,66 +17,71 @@ const (
 	sizeOfInfoHeader = 40
 )
 
-func check(e error) {
-	if e != nil {
-		panic(e.Error())
-	}
-}
-
 func main() {
 
-	inFile, error := os.Open("assets/yard.bmp")
-	check(error)
+	inFile, err := os.Open("assets/yard.bmp")
+	utils.Check(err)
+
 	defer inFile.Close()
 
-	var bitmapFileHeader bmp.BitmapFileHeader
-	error = bmp.EncodeHeader(14, inFile, &bitmapFileHeader)
-	check(error)
+	var fHeader bmp.FileHeader
+	err = bmp.EncodeHeader(sizeOfFileHeader, inFile, &fHeader)
+	utils.Check(err)
 
-	var bitmapInfoHeader bmp.BitmapInfoHeader
-	error = bmp.EncodeHeader(sizeOfInfoHeader, inFile, &bitmapInfoHeader)
-	check(error)
+	var iHeader bmp.InfoHeader
+	err = bmp.EncodeHeader(sizeOfInfoHeader, inFile, &iHeader)
+	utils.Check(err)
 
-	if bitmapFileHeader.Type != 0x4d42 ||
-		bitmapFileHeader.OffBits != 54 ||
-		bitmapInfoHeader.Size != sizeOfInfoHeader ||
-		bitmapInfoHeader.BitCount != 24 ||
-		bitmapInfoHeader.Compression != 0 {
+	if fHeader.Type != 0x4d42 ||
+		fHeader.OffBits != 54 ||
+		iHeader.Size != sizeOfInfoHeader ||
+		iHeader.BitCount != 24 ||
+		iHeader.Compression != 0 {
 
 		panic("Unsupported file format.\n")
 	}
 
-	height := int(-bitmapInfoHeader.Height) // height is negative
-	width := int(bitmapInfoHeader.Width)
+	// height is negative
+	height := int(-iHeader.Height)
+	width := int(iHeader.Width)
 
 	var padding int64 = int64((4 - (width*sizeOfPixel)%4) % 4)
 
-	pixels := make([]bmp.Pixel, width*height) // allocate memory for pixels
+	// allocate memory for pixels
+	pixels := make([]bmp.Pixel, width*height)
 
 	// fill pixels with RGB values
 	for i := range pixels {
 		buffer := make([]byte, sizeOfPixel)
-		inFile.Read(buffer)
-		binary.Read(bytes.NewReader(buffer), binary.LittleEndian, &pixels[i])
-		inFile.Seek(padding, io.SeekCurrent)
+		_, err = inFile.Read(buffer)
+		utils.Check(err)
+
+		err = binary.Read(bytes.NewReader(buffer), binary.LittleEndian, &pixels[i])
+		utils.Check(err)
+
+		// advance read-header to account for padding
+		_, err = inFile.Seek(padding, io.SeekCurrent)
+		utils.Check(err)
 	}
 
-	// STRUCTS TO BYTE CONVERSION
-	BMPBytes := make([]byte, 0, bitmapFileHeader.Size) // is it better to predefine the capacity or the length?
+	// bmp.Grayscale(&pixels)
+	bmp.Reflect(width, height, &pixels)
 
-	// isn't there a better way to convert structs to byte arrays?
-	bitmapFileHeaderByteArray := *(*[sizeOfFileHeader]byte)(unsafe.Pointer(&bitmapFileHeader))
-	bitmapInfoHeaderByteArray := *(*[sizeOfInfoHeader]byte)(unsafe.Pointer(&bitmapInfoHeader))
+	// STRUCTS TO BYTE CONVERSION
+	BMPBytes := make([]byte, 0, fHeader.Size)
+
+	fhArray := *(*[sizeOfFileHeader]byte)(unsafe.Pointer(&fHeader))
+	fiArray := *(*[sizeOfInfoHeader]byte)(unsafe.Pointer(&iHeader))
 
 	// remove padding from type in fileHeader
-	BMPBytes = append(BMPBytes, bitmapFileHeaderByteArray[:2]...)
-	BMPBytes = append(BMPBytes, bitmapFileHeaderByteArray[4:]...)
+	BMPBytes = append(BMPBytes, fhArray[:2]...)
+	BMPBytes = append(BMPBytes, fhArray[4:]...)
 
 	// add zeroes back to the end of the fileHeader
-	BMPBytes = append(BMPBytes, bitmapFileHeaderByteArray[2:4]...)
-	BMPBytes = append(BMPBytes, bitmapInfoHeaderByteArray[:]...)
+	BMPBytes = append(BMPBytes, fhArray[2:4]...)
+	BMPBytes = append(BMPBytes, fiArray[:]...)
 
-	// convert pixels to bytes
+	// convert pixels to byte array
 	for i := range pixels {
 		byteArray := *(*[sizeOfPixel]byte)(unsafe.Pointer(&pixels[i]))
 		BMPBytes = append(BMPBytes, byteArray[:]...)
@@ -86,12 +92,12 @@ func main() {
 
 	// WRITE BYTES TO FILE
 	outFile, err := os.Create("./out/result.bmp")
-	check(err)
+	utils.Check(err)
 	defer outFile.Close()
 
 	writer := bufio.NewWriter(outFile)
 	_, err = writer.Write(BMPBytes)
-	check(err)
+	utils.Check(err)
 
 	writer.Flush()
 }

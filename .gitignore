@@ -5,6 +5,7 @@
 *.so
 *.dylib
 *.hex
+*.zip
 *.hex.swp
 # Test binary, built with `go test -c`
 *.test
