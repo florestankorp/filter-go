@@ -57,67 +57,35 @@ func Blur(width int, height int, image *[][]Pixel) {
 				n7 := &(*image)[i+1][j]
 				n8 := &(*image)[i+1][j+1]
 
-				avgRed := averageRed(*pixel, *n1, *n2, *n3, *n4, *n5, *n6, *n7, *n8)
-				avgGreen := averageGreen(*pixel, *n1, *n2, *n3, *n4, *n5, *n6, *n7, *n8)
-				avgBlue := averageBlue(*pixel, *n1, *n2, *n3, *n4, *n5, *n6, *n7, *n8)
+				avg := average(*pixel, *n1, *n2, *n3, *n4, *n5, *n6, *n7, *n8)
 
-				pixel.Red = byte(avgRed)
-				n1.Red = byte(avgRed)
-				n2.Red = byte(avgRed)
-				n3.Red = byte(avgRed)
-				n4.Red = byte(avgRed)
-				n5.Red = byte(avgRed)
-				n6.Red = byte(avgRed)
-				n7.Red = byte(avgRed)
-				n8.Red = byte(avgRed)
+				(*pixel) = avg
+				(*n1) = avg
+				(*n2) = avg
+				(*n3) = avg
+				(*n4) = avg
+				(*n5) = avg
+				(*n6) = avg
+				(*n7) = avg
+				(*n8) = avg
 
-				pixel.Green = byte(avgGreen)
-				n1.Green = byte(avgGreen)
-				n2.Green = byte(avgGreen)
-				n3.Green = byte(avgGreen)
-				n4.Green = byte(avgGreen)
-				n5.Green = byte(avgGreen)
-				n6.Green = byte(avgGreen)
-				n7.Green = byte(avgGreen)
-				n8.Green = byte(avgGreen)
-
-				pixel.Blue = byte(avgBlue)
-				n1.Blue = byte(avgBlue)
-				n2.Blue = byte(avgBlue)
-				n3.Blue = byte(avgBlue)
-				n4.Blue = byte(avgBlue)
-				n5.Blue = byte(avgBlue)
-				n6.Blue = byte(avgBlue)
-				n7.Blue = byte(avgBlue)
-				n8.Blue = byte(avgBlue)
 			}
-
 		}
 	}
-
 }
 
-func averageRed(pixels ...Pixel) int {
-	i := 0
-	for _, color := range pixels {
-		i += int(color.Red)
+func average(pixels ...Pixel) Pixel {
+	var pixel Pixel
+
+	for _, p := range pixels {
+		pixel.Red += p.Red
+		pixel.Blue += p.Blue
+		pixel.Green += p.Green
 	}
 
-	return i / (len(pixels))
-}
-func averageBlue(pixels ...Pixel) int {
-	i := 0
-	for _, color := range pixels {
-		i += int(color.Blue)
-	}
+	pixel.Red /= byte(len(pixels))
+	pixel.Blue /= byte(len(pixels))
+	pixel.Green /= byte(len(pixels))
 
-	return i / (len(pixels))
-}
-func averageGreen(pixels ...Pixel) int {
-	i := 0
-	for _, color := range pixels {
-		i += int(color.Green)
-	}
-
-	return i / (len(pixels))
+	return pixel
 }
