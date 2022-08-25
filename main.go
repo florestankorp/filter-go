@@ -12,9 +12,9 @@ import (
 )
 
 const (
-	sizeOfPixel      = 3
-	sizeOfFileHeader = 14
-	sizeOfInfoHeader = 40
+	sizeOfPixel = 3
+	fHeaderSize = 14
+	iHeaderSize = 40
 )
 
 func main() {
@@ -25,16 +25,16 @@ func main() {
 	defer inFile.Close()
 
 	var fHeader bmp.FileHeader
-	err = bmp.EncodeHeader(sizeOfFileHeader, inFile, &fHeader)
+	err = bmp.EncodeHeader(fHeaderSize, inFile, &fHeader)
 	utils.Check(err)
 
 	var iHeader bmp.InfoHeader
-	err = bmp.EncodeHeader(sizeOfInfoHeader, inFile, &iHeader)
+	err = bmp.EncodeHeader(iHeaderSize, inFile, &iHeader)
 	utils.Check(err)
 
 	if fHeader.Type != 0x4d42 ||
 		fHeader.OffBits != 54 ||
-		iHeader.Size != sizeOfInfoHeader ||
+		iHeader.Size != iHeaderSize ||
 		iHeader.BitCount != 24 ||
 		iHeader.Compression != 0 {
 
@@ -64,21 +64,23 @@ func main() {
 		utils.Check(err)
 	}
 
-	// bmp.Grayscale(&pixels)
-	bmp.Reflect(width, height, &pixels)
+	image := bmp.Make2DArray(width, height, pixels)
+
+	// bmp.Grayscale(&image)
+	bmp.Blur(width, height, &image)
 
 	// STRUCTS TO BYTE CONVERSION
 	BMPBytes := make([]byte, 0, fHeader.Size)
 
-	fhArray := *(*[sizeOfFileHeader]byte)(unsafe.Pointer(&fHeader))
-	fiArray := *(*[sizeOfInfoHeader]byte)(unsafe.Pointer(&iHeader))
+	fhSlice := *(*[fHeaderSize]byte)(unsafe.Pointer(&fHeader))
+	fiArray := *(*[iHeaderSize]byte)(unsafe.Pointer(&iHeader))
 
 	// remove padding from type in fileHeader
-	BMPBytes = append(BMPBytes, fhArray[:2]...)
-	BMPBytes = append(BMPBytes, fhArray[4:]...)
+	BMPBytes = append(BMPBytes, fhSlice[:2]...)
+	BMPBytes = append(BMPBytes, fhSlice[4:]...)
 
 	// add zeroes back to the end of the fileHeader
-	BMPBytes = append(BMPBytes, fhArray[2:4]...)
+	BMPBytes = append(BMPBytes, fhSlice[2:4]...)
 	BMPBytes = append(BMPBytes, fiArray[:]...)
 
 	// convert pixels to byte array
