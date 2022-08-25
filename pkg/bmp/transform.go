@@ -75,9 +75,7 @@ func Blur(width int, height int, image *[][]Pixel) {
 }
 
 func average(pixels ...Pixel) Pixel {
-	var red int
-	var blue int
-	var green int
+	var red, blue, green int
 
 	for _, p := range pixels {
 		red += int(p.Red)
@@ -85,9 +83,9 @@ func average(pixels ...Pixel) Pixel {
 		green += int(p.Green)
 	}
 
-	red /= (len(pixels))
-	blue /= (len(pixels))
-	green /= (len(pixels))
-
-	return Pixel{Red: byte(red), Blue: byte(blue), Green: byte(green)}
+	return Pixel{
+		Red:   byte(red / len(pixels)),
+		Blue:  byte(blue / len(pixels)),
+		Green: byte(green / len(pixels)),
+	}
 }
