@@ -4,7 +4,7 @@ This is my first attempt at writing [Go](https://go.dev/).
 
 When I set out to learn this language, I wanted to build something simple, fun and challenging:
 
-This [this problem set](https://cs50.harvard.edu/x/2022/psets/4/filter/more/) felt like a worthwhile challenge because it had just the right amount of complexity paired with the playfulness of manipulating bytes, sometimes leading to unexpected and interesting glitches:
+This [problem-set](https://cs50.harvard.edu/x/2022/psets/4/filter/more/) felt like a worthwhile challenge because it had just the right amount of complexity paired with the playfulness of manipulating bytes, sometimes leading to unexpected and interesting glitches:
 
 **Calculation errors when reversing the image**
 
