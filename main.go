@@ -49,7 +49,7 @@ func main() {
 		!*blurFlagPtr &&
 		!*reflectFlagPtr &&
 		len(argsWithoutProg) == 0 {
-		log.SetFlags(0)
+
 		e := errors.New("error: no flag provided")
 		log.Fatal(e)
 	}
@@ -165,7 +165,7 @@ func main() {
 	writer := bufio.NewWriter(outFile)
 	_, err = writer.Write(BMPBytes)
 	utils.Check(err)
-	fmt.Printf("new file created: %s\n", filename)
+	fmt.Printf("success! new file created: %s\n", filename)
 
 	writer.Flush()
 }
