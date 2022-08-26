@@ -4,9 +4,12 @@ import (
 	"bufio"
 	"bytes"
 	"encoding/binary"
+	"errors"
 	"filter-go/pkg/bmp"
 	"filter-go/pkg/utils"
+	"flag"
 	"io"
+	"log"
 	"os"
 	"unsafe"
 )
@@ -19,7 +22,36 @@ const (
 
 func main() {
 
-	inFile, err := os.Open("assets/yard.bmp")
+	log.SetFlags(0) // logger without additional info
+
+	argsWithoutProg := os.Args[1:]
+
+	grayscaleFlagPtr := flag.Bool("g", false, "Make image grayscale")
+	blurFlagPtr := flag.Bool("b", false, "Blur image")
+	reflectFlagPtr := flag.Bool("r", false, "Reflect image horizontally")
+
+	flag.Parse()
+
+	if flag.NFlag() > 1 {
+		e := errors.New("error: only one flag allowed")
+		log.Fatal(e)
+	}
+
+	if len(argsWithoutProg) != 3 {
+		e := errors.New("usage: ./filter-go [flag] <infile>.bmp <outfile>.bmp")
+		log.Fatal(e)
+	}
+
+	if !*grayscaleFlagPtr &&
+		!*blurFlagPtr &&
+		!*reflectFlagPtr &&
+		len(argsWithoutProg) == 0 {
+		log.SetFlags(0)
+		e := errors.New("error: no flag provided")
+		log.Fatal(e)
+	}
+
+	inFile, err := os.Open("assets/courtyard.bmp")
 	utils.Check(err)
 
 	defer inFile.Close()
@@ -38,7 +70,8 @@ func main() {
 		iHeader.BitCount != 24 ||
 		iHeader.Compression != 0 {
 
-		panic("Unsupported file format.\n")
+		e := errors.New("error: unsupported file format")
+		log.Fatal(e)
 	}
 
 	// height is negative
@@ -66,8 +99,17 @@ func main() {
 
 	image := bmp.Make2DArray(width, height, pixels)
 
-	// bmp.Grayscale(&image)
-	bmp.Blur(width, height, &image)
+	if *grayscaleFlagPtr {
+		bmp.Grayscale(&image)
+	}
+
+	if *blurFlagPtr {
+		bmp.Blur(width, height, &image)
+	}
+
+	if *reflectFlagPtr {
+		bmp.Reflect(height, &image)
+	}
 
 	// STRUCTS TO BYTE CONVERSION
 	BMPBytes := make([]byte, 0, fHeader.Size)
@@ -95,6 +137,7 @@ func main() {
 	// WRITE BYTES TO FILE
 	outFile, err := os.Create("./out/result.bmp")
 	utils.Check(err)
+
 	defer outFile.Close()
 
 	writer := bufio.NewWriter(outFile)

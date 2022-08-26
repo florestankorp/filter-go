@@ -19,6 +19,7 @@ func EncodeHeader(bufferSize int, file *os.File, header interface{}) error {
 
 	return nil
 }
+
 func reverse(pixels []Pixel) []Pixel {
 	for i, j := 0, len(pixels)-1; i < j; i, j = i+1, j-1 {
 		pixels[i], pixels[j] = pixels[j], pixels[i]

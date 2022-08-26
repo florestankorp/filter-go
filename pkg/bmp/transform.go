@@ -1,13 +1,5 @@
 package bmp
 
-type Color int64
-
-const (
-	Red Color = iota
-	Green
-	Blue
-)
-
 func Grayscale(image *[][]Pixel) {
 	for i, scanLine := range *image {
 		for j, pixel := range scanLine {
@@ -33,6 +25,7 @@ func Reflect(height int, image *[][]Pixel) {
 }
 
 func Blur(width int, height int, image *[][]Pixel) {
+	// TODO: blur edges!
 	for i, scanLine := range *image {
 		for j := range scanLine {
 			isFirstLine := i == 0
@@ -68,7 +61,6 @@ func Blur(width int, height int, image *[][]Pixel) {
 				(*n6) = avg
 				(*n7) = avg
 				(*n8) = avg
-
 			}
 		}
 	}
