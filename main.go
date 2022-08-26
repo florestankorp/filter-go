@@ -156,8 +156,8 @@ func main() {
 		e := errors.New("error: output file does not have ending '.bmp'")
 		log.Fatal(e)
 	}
-
-	outFile, err := os.Create(outFolder + "/" + argsWithoutProg[2])
+	filename := outFolder + "/" + argsWithoutProg[2]
+	outFile, err := os.Create(filename)
 	utils.Check(err)
 
 	defer outFile.Close()
@@ -165,6 +165,7 @@ func main() {
 	writer := bufio.NewWriter(outFile)
 	_, err = writer.Write(BMPBytes)
 	utils.Check(err)
+	fmt.Printf("new file created: %s\n", filename)
 
 	writer.Flush()
 }
