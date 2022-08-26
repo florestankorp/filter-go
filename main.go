@@ -56,6 +56,7 @@ func main() {
 
 	defer inFile.Close()
 
+	// BYTES TO STRUCT CONVERSION
 	var fHeader bmp.FileHeader
 	err = bmp.EncodeHeader(fHeaderSize, inFile, &fHeader)
 	utils.Check(err)
@@ -111,7 +112,7 @@ func main() {
 		bmp.Reflect(height, &image)
 	}
 
-	// STRUCTS TO BYTE CONVERSION
+	// STRUCT TO BYTE CONVERSION
 	BMPBytes := make([]byte, 0, fHeader.Size)
 
 	fhSlice := *(*[fHeaderSize]byte)(unsafe.Pointer(&fHeader))
@@ -134,7 +135,13 @@ func main() {
 	// add zeroes to the end of the file
 	BMPBytes = append(BMPBytes, []byte{0, 0}...)
 
-	// WRITE BYTES TO FILE
+	// WRITE TO NEW FILE
+
+	_, err = os.Stat("./out")
+	if errors.Is(err, os.ErrNotExist) {
+		os.Mkdir("out", os.ModePerm) // make "out" folder if it doesn't exist
+	}
+
 	outFile, err := os.Create("./out/result.bmp")
 	utils.Check(err)
 
