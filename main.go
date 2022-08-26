@@ -8,9 +8,11 @@ import (
 	"filter-go/pkg/bmp"
 	"filter-go/pkg/utils"
 	"flag"
+	"fmt"
 	"io"
 	"log"
 	"os"
+	"strings"
 	"unsafe"
 )
 
@@ -38,6 +40,7 @@ func main() {
 	}
 
 	if len(argsWithoutProg) != 3 {
+		fmt.Println("oops! something went wrong...")
 		e := errors.New("usage: ./filter-go [flag] <infile>.bmp <outfile>.bmp")
 		log.Fatal(e)
 	}
@@ -51,7 +54,12 @@ func main() {
 		log.Fatal(e)
 	}
 
-	inFile, err := os.Open("assets/courtyard.bmp")
+	_, err := os.Stat(argsWithoutProg[1])
+	if errors.Is(err, os.ErrNotExist) {
+		log.Fatal(err.Error())
+	}
+
+	inFile, err := os.Open(argsWithoutProg[1])
 	utils.Check(err)
 
 	defer inFile.Close()
@@ -71,7 +79,7 @@ func main() {
 		iHeader.BitCount != 24 ||
 		iHeader.Compression != 0 {
 
-		e := errors.New("error: unsupported file format")
+		e := errors.New("error: file format of input is not supported")
 		log.Fatal(e)
 	}
 
@@ -137,12 +145,19 @@ func main() {
 
 	// WRITE TO NEW FILE
 
-	_, err = os.Stat("./out")
+	outFolder := "out"
+
+	_, err = os.Stat(outFolder)
 	if errors.Is(err, os.ErrNotExist) {
-		os.Mkdir("out", os.ModePerm) // make "out" folder if it doesn't exist
+		os.Mkdir(outFolder, os.ModePerm) // make "out" folder if it doesn't exist
 	}
 
-	outFile, err := os.Create("./out/result.bmp")
+	if !strings.HasSuffix(argsWithoutProg[2], ".bmp") {
+		e := errors.New("error: output file does not have ending '.bmp'")
+		log.Fatal(e)
+	}
+
+	outFile, err := os.Create(outFolder + "/" + argsWithoutProg[2])
 	utils.Check(err)
 
 	defer outFile.Close()
